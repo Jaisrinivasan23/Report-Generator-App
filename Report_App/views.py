@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Department
 from hods.models import Faculty
 import uuid
+from django.core.files.storage import FileSystemStorage
+import pandas as pd
 
 # Hardcoded Admin Credentials
 ADMIN_USERNAME = "admin"
@@ -51,35 +53,97 @@ def add_department(request):
     if not request.session.get('admin_logged_in'):
         return redirect('common_login')
 
-    # Initialize variables for the form
-    department_id = request.POST.get('department_id')
-    department = None
+    departments = Department.objects.all()
 
-    # Handle form submission (Add or Edit)
     if request.method == "POST":
-        name = request.POST['name']
-        hod_name = request.POST['hod_name']
-        email = request.POST['email']
+        # Check if a file was uploaded
+        file_uploaded = 'file' in request.FILES
+        form_filled = all(
+            key in request.POST and request.POST[key]
+            for key in ['name', 'hod_name', 'email']
+        )
 
-        if department_id:  # Edit existing department
-            department = get_object_or_404(Department, id=department_id)
-            department.name = name
-            department.hod_name = hod_name
-            department.email = email
-            department.save()
-        else:  # Add new department
-            password = uuid.uuid4().hex[:8]
-            Department.objects.create(name=name, hod_name=hod_name, email=email, password=password)
+        if not file_uploaded and not form_filled:
+            return render(request, 'add_department.html', {
+                'departments': departments,
+                'error': 'Please either fill out the form or upload a file.'
+            })
 
+        # Handle file upload
+        if file_uploaded:
+            uploaded_file = request.FILES['file']
+            fs = FileSystemStorage()
+            file_path = fs.save(uploaded_file.name, uploaded_file)
+            file_full_path = fs.path(file_path)
+
+            try:
+                # Read uploaded file using pandas
+                if file_path.endswith('.csv'):
+                    df = pd.read_csv(file_full_path)
+                elif file_path.endswith('.xlsx'):
+                    df = pd.read_excel(file_full_path)
+                else:
+                    return render(request, 'add_department.html', {
+                        'departments': departments,
+                        'error': 'Unsupported file format. Please upload CSV or Excel files.'
+                    })
+
+                # Validate data before insertion
+                existing_emails = set(Department.objects.values_list('email', flat=True))
+                new_departments = []
+
+                for _, row in df.iterrows():
+                    if 'name' not in row or 'hod_name' not in row or 'email' not in row:
+                        return render(request, 'add_department.html', {
+                            'departments': departments,
+                            'error': 'Uploaded file is missing required columns: name, hod_name, email.'
+                        })
+
+                    email = row['email']
+
+                    if email in existing_emails:
+                        return render(request, 'add_department.html', {
+                            'departments': departments,
+                            'error': f"Duplicate email found: {email}."
+                        })
+
+                    # Prepare new department object
+                    new_departments.append(Department(
+                        name=row['name'],
+                        hod_name=row['hod_name'],
+                        email=email,
+                        password=uuid.uuid4().hex[:8]
+                    ))
+
+                # Bulk create departments
+                Department.objects.bulk_create(new_departments)
+            except Exception as e:
+                return render(request, 'add_department.html', {
+                    'departments': departments,
+                    'error': f'Error processing file: {str(e)}'
+                })
+
+            return redirect('add_department')
+
+        # Handle form submission (Add manually)
+        name = request.POST.get('name')
+        hod_name = request.POST.get('hod_name')
+        email = request.POST.get('email')
+
+        # Check for duplicates in manual entry
+        if Department.objects.filter(email=email).exists():
+            return render(request, 'add_department.html', {
+                'departments': departments,
+                'error': f"Email already exists: {email}"
+            })
+
+        password = uuid.uuid4().hex[:8]
+        Department.objects.create(name=name, hod_name=hod_name, email=email, password=password)
         return redirect('add_department')
 
-    # Get department for editing (if department_id is in GET params)
-    if 'edit' in request.GET:
-        department_id = request.GET['edit']
-        department = get_object_or_404(Department, id=department_id)
-
-    departments = Department.objects.all()
-    return render(request, 'add_department.html', {'departments': departments, 'edit_department': department})
+    return render(request, 'add_department.html', {
+        'departments': departments
+    })
 
 def delete_department(request, department_id):
     if not request.session.get('admin_logged_in'):

@@ -5,6 +5,7 @@ from PIL import Image
 import piexif
 from .models import Event 
 from django.contrib.auth.decorators import login_required
+from .forms import EventForm
 
 def faculty_dashboard(request):
     faculty_id = request.session.get('faculty_id')
@@ -74,3 +75,15 @@ def event_report(request, event_id):
     """Display the details of the submitted event."""
     event = get_object_or_404(Event, id=event_id)
     return render(request, 'event_report.html', {'event': event})
+
+def get(request):
+    event = EventForm()
+    if request.method == 'POST':
+        event = EventForm(request.POST)
+        if event.is_valid():
+            event.save()
+            print(event)
+            return redirect('event_report')
+        else:
+            return render(request, 'forms.html', {'event': event})
+    return render(request, 'forms.html', {'event': event})

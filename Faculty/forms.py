@@ -5,3 +5,4 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = '__all__' # Exclude faculty field
+        

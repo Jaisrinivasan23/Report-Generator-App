@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from Report_App.models import Department
 from .models import Faculty
 import uuid
-from django.contrib import messages 
+from django.contrib import messages
+from Faculty.models import Event 
 
 def hod_dashboard(request):
     hod_id = request.session.get('hod_id')
@@ -41,3 +42,13 @@ def add_faculty(request):
 def view_faculties(request):
     faculties = Faculty.objects.all()
     return render(request, 'view_faculties.html', {'faculties': faculties})
+
+def Department_Events(request):
+    hod_id = request.session.get('hod_id')
+    Events = Event.objects.filter(department_name=hod_id)
+    return render(request, 'Department_Events.html', {'Events': Events})
+
+def Dept_Details(request,event_details):
+    events = Event.objects.filter(event_title=event_details)
+    print(events)
+    return render(request,'Dept_event_Details.html',{'event':events})
