@@ -17,7 +17,6 @@ def faculty_dashboard(request):
 
 
 def is_gps_tagged_image(image_path):
-    """Check if the uploaded image has GPS EXIF data."""
     try:
         img = Image.open(image_path)
         exif_data = piexif.load(img.info.get('exif', b''))
@@ -27,9 +26,7 @@ def is_gps_tagged_image(image_path):
     except Exception:
         return False
 
-
 def add_event(request):
-    # Fetch the faculty's details based on the session or logged-in context
     faculty_id = request.session.get('faculty_id')
     faculty = Faculty.objects.get(id=faculty_id)
     department = faculty.department
@@ -67,9 +64,9 @@ def add_event(request):
         event.save()
 
         messages.success(request, "Event added successfully!")
-        return redirect('event_report', event_id=event.id)  # Redirect to the event report page
+        return redirect('event_report', event_id=event.id)  
 
-    return render(request, 'add_event.html')  # Render the form if the request is GET
+    return render(request, 'add_event.html')  
 
 def event_report(request, event_id):
     """Display the details of the submitted event."""
