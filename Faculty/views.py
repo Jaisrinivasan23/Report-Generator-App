@@ -87,3 +87,5 @@ def get(request):
         else:
             return render(request, 'forms.html', {'event': event})
     return render(request, 'forms.html', {'event': event})
+def view(request):
+    return render(request,'view.html')
