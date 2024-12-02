@@ -1,91 +1,65 @@
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from hods.models import Faculty
-from PIL import Image
-import piexif
-from .models import Event 
-from django.contrib.auth.decorators import login_required
-from .forms import EventForm
+from .models import Event, UploadedTemplate
+from .forms import EventForm, UploadTemplateForm
+from bs4 import BeautifulSoup
 
-def faculty_dashboard(request):
-    faculty_id = request.session.get('faculty_id')
-    if not faculty_id:
-        return redirect('common_login')  # Redirect to login if not authenticated
-
-    faculty = Faculty.objects.get(id=faculty_id)
-    return render(request, 'faculty_dashboard.html', {'faculty': faculty})
-
-
-def is_gps_tagged_image(image_path):
-    """Check if the uploaded image has GPS EXIF data."""
-    try:
-        img = Image.open(image_path)
-        exif_data = piexif.load(img.info.get('exif', b''))
-        if piexif.GPSIFD.GPSLatitude in exif_data['GPS'] and piexif.GPSIFD.GPSLongitude in exif_data['GPS']:
-            return True
-        return False
-    except Exception:
-        return False
-
+def dashboard(request):
+    return render(request, 'view.html')
 
 def add_event(request):
-    # Fetch the faculty's details based on the session or logged-in context
-    faculty_id = request.session.get('faculty_id')
-    faculty = Faculty.objects.get(id=faculty_id)
-    department = faculty.department
-    print(faculty)
     if request.method == 'POST':
-        event_name = request.POST.get('event_name')
-        event_title = request.POST.get('event_title')
-        objective = request.POST.get('objective')
-        event_date_time = request.POST.get('event_date_time')
-        venue = request.POST.get('venue')
-        gps_image = request.FILES.get('gps_image')
-        normal_image = request.FILES.get('normal_image')
-        no_of_students_attended = request.POST.get('no_of_students_attended')
-        classes_attended = request.POST.get('classes_attended')
-        approval_letter = request.FILES.get('approval_letter')
-        speaker_details = request.POST.get('speaker_details')
+        form = EventForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Event added successfully!")
+            return redirect('view_events')
+    else:
+        form = EventForm()
+    return render(request, 'add_event.html', {'form': form})
 
-        # Save the event
-        event = Event(
-            faculty= faculty, # Assuming 'name' is the field in Faculty model
-            event_name=event_name,
-            event_title=event_title,
-            objective=objective,
-            event_date_time=event_date_time,
-            venue=venue,
-            gps_image=gps_image,
-            normal_image=normal_image,
-            department_name=department,  # Use department from the logged-in faculty
-            faculty_coordinator_name=faculty,
-            no_of_students_attended=no_of_students_attended,
-            classes_attended=classes_attended,
-            approval_letter=approval_letter,
-            speaker_details=speaker_details
-        )
-        event.save()
-
-        messages.success(request, "Event added successfully!")
-        return redirect('event_report', event_id=event.id)  # Redirect to the event report page
-
-    return render(request, 'add_event.html')  # Render the form if the request is GET
+def view_events(request):
+    events = Event.objects.all()
+    return render(request, 'events.html', {'events': events})
 
 def event_report(request, event_id):
-    """Display the details of the submitted event."""
     event = get_object_or_404(Event, id=event_id)
     return render(request, 'event_report.html', {'event': event})
 
-def get(request):
-    event = EventForm()
+def upload_template(request):
     if request.method == 'POST':
-        event = EventForm(request.POST)
-        if event.is_valid():
-            event.save()
-            print(event)
-            return redirect('event_report')
-        else:
-            return render(request, 'forms.html', {'event': event})
-    return render(request, 'forms.html', {'event': event})
-def view(request):
-    return render(request,'view.html')
+        form = UploadTemplateForm(request.POST, request.FILES)
+        if form.is_valid():
+            uploaded_template = form.save(commit=False)
+            html_content = request.FILES['uploaded_file'].read().decode('utf-8')
+            soup = BeautifulSoup(html_content, 'html.parser')
+
+            form_fields = {}
+            for input_tag in soup.find_all(['input', 'textarea']):
+                field_name = input_tag.get('name', f'field_{len(form_fields) + 1}')
+                field_type = input_tag.get('type', 'text')
+                form_fields[field_name] = {'type': field_type}
+
+            uploaded_template.generated_form = form_fields
+            uploaded_template.save()
+            return redirect('fill_template', pk=uploaded_template.pk)
+    else:
+        form = UploadTemplateForm()
+    return render(request, 'upload_template.html', {'form': form})
+
+def fill_template(request, pk):
+    template = get_object_or_404(UploadedTemplate, pk=pk)
+    form_data = template.generated_form
+    if request.method == 'POST':
+        filled_data = {field: request.POST.get(field, '') for field in form_data.keys()}
+        template.filled_data = filled_data
+        template.save()
+        messages.success(request, "Template updated successfully!")
+        return redirect('dashboard')
+    return render(request, 'fill_template.html', {'template': template})
+
+def report_editor(request):
+    return render(request, 'report_editor.html')
+
+def update_template(request):
+    return render(request, 'update_template.html')

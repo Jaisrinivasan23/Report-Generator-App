@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Existing Template</title>
+    <style>
+        /* General body styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Main container */
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #4CAF50;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        h3 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        /* Styling for the logo */
+        .logo img {
+            max-width: 200px;
+            height: auto;
+            display: block;
+            margin: 0 auto 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer; /* Makes the image clickable */
+        }
+
+        /* Change button styling */
+        .change-btn {
+            display: none;
+            margin: 10px auto;
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .change-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Hidden file input for selecting new image */
+        .file-input {
+            display: none;
+        }
+
+        /* Button to select new image */
+        .file-label {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 12px 20px;
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .file-label:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styling for the form fields */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .form-group input[type="text"], 
+        .form-group input[type="datetime-local"], 
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        /* Button styling */
+        .button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 12px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background-color: #45a049;
+        }
+
+        .button:focus {
+            outline: none;
+        }
+
+        /* Add fields section */
+        .add-field {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .add-field input {
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        .plus-btn {
+            padding: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            margin-left: 10px;
+        }
+
+        .plus-btn:hover {
+            background-color: #45a049;
+        }
+
+        .dynamic-fields {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>KGiSL Institute of Technology</h1>
+
+        <div class="logo">
+            <img id="college-logo" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSWqXtXacZ58uJFuUcmv9yHSA2hWUkASRbPg" alt="College Logo" onclick="showChangeButton()">
+        </div>
+
+        <!-- Change Image Button -->
+        <button id="change-btn" class="change-btn" onclick="changeImage()">Change</button>
+
+        <!-- File input for selecting a new image -->
+        <input type="file" id="file-input" class="file-input" accept="image/*" onchange="previewImage(event)">
+        
+        <!-- Label for file input (styled as a button) -->
+        <label for="file-input" class="file-label">Select New Image</label>
+
+        <h3>College Name: Example College</h3>
+
+        <div class="form-group">
+            <label for="event_name">Event Name:</label>
+            <input type="text" id="event_name" value="Sample Event">
+        </div>
+
+        <div class="form-group">
+            <label for="event_title">Event Title:</label>
+            <input type="text" id="event_title" value="Sample Title">
+        </div>
+
+        <div class="form-group">
+            <label for="objective">Objective:</label>
+            <textarea id="objective" placeholder="Enter the objective of the event">The objective of this event is to...</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="event_date_time">Event Date & Time:</label>
+            <input type="datetime-local" id="event_date_time" value="2024-12-01T10:00">
+        </div>
+
+        <div class="form-group">
+            <label for="venue">Venue:</label>
+            <input type="text" id="venue" value="Conference Hall 1">
+        </div>
+
+        <div class="form-group">
+            <label for="faculty_coordinator_name">Faculty Coordinator Name:</label>
+            <input type="text" id="faculty_coordinator_name" value="Dr. John Doe">
+        </div>
+
+        <div class="form-group">
+            <label for="no_of_students_attended">Number of Students Attended:</label>
+            <input type="text" id="no_of_students_attended" value="150">
+        </div>
+
+        <div class="form-group">
+            <label for="classes_attended">Classes Attended:</label>
+            <input type="text" id="classes_attended" value="CS101, CS102">
+        </div>
+
+        <!-- Add Fields Section -->
+        <div class="add-field">
+            <input type="text" id="new_field_name" placeholder="New Field Name">
+            <button class="plus-btn" onclick="addNewField()">+</button>
+        </div>
+
+        <div class="dynamic-fields" id="dynamic-fields"></div>
+
+        <button class="button">Update Template</button>
+    </div>
+
+    <script>
+        // Function to show the "Change" button when the image is clicked
+        function showChangeButton() {
+            document.getElementById('change-btn').style.display = 'block'; // Show Change button
+        }
+
+        // Function to change the image
+        function changeImage() {
+            document.getElementById('file-input').click(); // Trigger the file input click
+        }
+
+        // Function to preview the new image
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('college-logo').src = e.target.result; // Update image src
+                    document.getElementById('change-btn').style.display = 'none'; // Hide Change button
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Function to add new fields dynamically
+        function addNewField() {
+            var fieldName = document.getElementById('new_field_name').value;
+
+            if (fieldName) {
+                // Create new form group
+                var div = document.createElement('div');
+                div.classList.add('form-group');
+                div.innerHTML = `
+                    <label for="${fieldName}">${fieldName}:</label>
+                    <input type="text" id="${fieldName}" value="">
+                `;
+                document.getElementById('dynamic-fields').appendChild(div);
+
+                // Clear input field after adding
+                document.getElementById('new_field_name').value = '';
+            }
+        }
+    </script>
+
+</body>
+</html>
