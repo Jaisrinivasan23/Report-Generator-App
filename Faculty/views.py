@@ -1,13 +1,14 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib import messages
 from hods.models import Faculty
+from bs4 import BeautifulSoup 
 from PIL import Image
 import piexif
-from .models import Event 
+from .models import Event , UploadedTemplate
 from django.contrib.auth.decorators import login_required
 from .forms import EventForm
-
-def faculty_dashboard(request):
+from .forms import ProductTemplateForm, UploadTemplateForm
+def dashboard(request):
     faculty_id = request.session.get('faculty_id')
     if not faculty_id:
         return redirect('common_login')  # Redirect to login if not authenticated
@@ -17,6 +18,7 @@ def faculty_dashboard(request):
 
 
 def is_gps_tagged_image(image_path):
+    """Check if the uploaded image has GPS EXIF data."""
     try:
         img = Image.open(image_path)
         exif_data = piexif.load(img.info.get('exif', b''))
@@ -26,7 +28,9 @@ def is_gps_tagged_image(image_path):
     except Exception:
         return False
 
+
 def add_event(request):
+    # Fetch the faculty's details based on the session or logged-in context
     faculty_id = request.session.get('faculty_id')
     faculty = Faculty.objects.get(id=faculty_id)
     department = faculty.department
@@ -64,9 +68,9 @@ def add_event(request):
         event.save()
 
         messages.success(request, "Event added successfully!")
-        return redirect('event_report', event_id=event.id)  
+        return redirect('event_report', event_id=event.id)  # Redirect to the event report page
 
-    return render(request, 'add_event.html')  
+    return render(request, 'add_event.html')  # Render the form if the request is GET
 
 def event_report(request, event_id):
     """Display the details of the submitted event."""
@@ -86,6 +90,7 @@ def get(request):
     return render(request, 'forms.html', {'event': event})
 def view(request):
     return render(request,'view.html')
+<<<<<<< HEAD
 
 def submit_for_approval(request, event_id):
     event = get_object_or_404(Event, id=event_id)
@@ -104,3 +109,38 @@ def View_Report(request,ReportID):
     event = get_object_or_404(Event, id=ReportID)
     print(event)
     return render(request, 'view_report.html', {'event': event})
+=======
+def events(request):
+    var=Event.objects.all()
+    return render(request,'events.html',{'var':var})
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+
+def report_editor(request):
+    # Here you can create the default template or fetch the existing template from the database
+    return render(request, 'report_editor.html')
+
+@csrf_exempt
+def add_field(request):
+    if request.method == 'POST':
+        field_name = request.POST.get('field_name')
+        field_value = request.POST.get('field_value')
+        # Save extra field logic here
+        return JsonResponse({"success": True, "field_name": field_name})
+def update_template(request):
+    success_message = None  # Initialize the success message variable
+
+    if request.method == 'POST':
+        form = ProductTemplateForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()  # Save the form data to the database
+            success_message = "Template added successfully!"  # Set success message
+            form = ProductTemplateForm()  # Reset the form after successful submission
+    else:
+        form = ProductTemplateForm()
+
+    # Pass the form and success message to the template
+    return render(request, 'update_template.html', {'form': form, 'success_message': success_message})
+>>>>>>> 60bc854ee3376eac3ed6e9be840041feae58d7f8
