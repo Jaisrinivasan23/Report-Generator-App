@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from Report_App.models import Department
 from .models import Faculty
 import uuid
@@ -44,11 +44,31 @@ def view_faculties(request):
     return render(request, 'view_faculties.html', {'faculties': faculties})
 
 def Department_Events(request):
-    hod_id = request.session.get('hod_id')
-    Events = Event.objects.filter(department_name=hod_id)
-    return render(request, 'Department_Events.html', {'Events': Events})
+    id = request.session.get('hod_id')
+    department = Department.objects.filter(id=id).first()
+    events = Event.objects.filter(department_name=department.name)
+    return render(request, 'Department_Events.html', {'events': events})
 
 def Dept_Details(request,event_details):
     events = Event.objects.filter(event_title=event_details)
     print(events)
     return render(request,'Dept_event_Details.html',{'event':events})
+
+def View_Report_HOD(request, ReportID):
+    # Get the event object
+    event = get_object_or_404(Event, id=ReportID)
+
+    if request.method == 'POST':
+        # Get data from the form
+        remarks = request.POST.get('remarks', '').strip()
+        status = request.POST.get('status', 'Pending')
+
+        # Update the event object
+        event.remarks = remarks
+        event.status = status
+        event.save()
+
+        # Redirect back to the same page or to another page
+        return redirect('View_Report_HOD', ReportID=ReportID)
+
+    return render(request, 'view_report.html', {'event': event})

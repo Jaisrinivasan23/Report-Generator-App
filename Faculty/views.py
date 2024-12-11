@@ -46,7 +46,7 @@ def add_event(request):
 
         # Save the event
         event = Event(
-            faculty= faculty, # Assuming 'name' is the field in Faculty model
+            faculty= faculty,
             event_name=event_name,
             event_title=event_title,
             objective=objective,
@@ -54,7 +54,7 @@ def add_event(request):
             venue=venue,
             gps_image=gps_image,
             normal_image=normal_image,
-            department_name=department,  # Use department from the logged-in faculty
+            department_name=department,
             faculty_coordinator_name=faculty,
             no_of_students_attended=no_of_students_attended,
             classes_attended=classes_attended,
@@ -86,3 +86,21 @@ def get(request):
     return render(request, 'forms.html', {'event': event})
 def view(request):
     return render(request,'view.html')
+
+def submit_for_approval(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    if request.method == 'POST':
+        event.status = 'pending'  # Assuming 'pending' is the status for HOD approval
+        event.save()
+        messages.success(request, f"Event '{event.event_name}' has been submitted for approval.")
+        return redirect('event_report', event_id=event.id)
+    
+def View_all_events(request):
+    id = request.session.get('faculty_id')
+    events = Event.objects.filter(faculty_id=id)
+    return render(request, 'view_all_events.html', {'events': events})
+
+def View_Report(request,ReportID):
+    event = get_object_or_404(Event, id=ReportID)
+    print(event)
+    return render(request, 'view_report.html', {'event': event})

@@ -6,7 +6,6 @@ urlpatterns = [
     path('add-faculty/', views.add_faculty, name='add_faculty'),
     path('view-faculties/', views.view_faculties, name='view_faculties'),
     path('Department-Events/', views.Department_Events, name='events'),
-    path('Event-Details/<str:event_details>',views.Dept_Details,name='Event_details')
-    
-    
+    path('Event-Details/<str:event_details>',views.Dept_Details,name='Event_details'),
+    path('View-Report-HOD/<int:ReportID>',views.View_Report_HOD,name='View_Report_HOD')    
 ]

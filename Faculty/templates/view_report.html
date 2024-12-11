@@ -163,15 +163,6 @@
                 </tr>
             </table>
         </div>
-
-        <!-- Button to submit for approval -->
-        <div class="submit-button">
-            <form method="POST" action="{% url 'submit_for_approval' event.id %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary">Submit for Approval</button>
-            </form>
-        </div>
-
         <div class="footer">
             <p>Prepared by: {{ event.faculty.name }} | Assistant Professor</p>
         </div>

@@ -9,4 +9,8 @@ urlpatterns = [
     path('event-report/<int:event_id>/', views.event_report, name='event_report'),
     path('event/', views.get, name='event'),
     path('view/', views.view, name='view'),
+    path('Faculty_Events/', views.View_all_events, name='view_events'),
+    path('submit-for-approval/<int:event_id>/', views.submit_for_approval, name='submit_for_approval'),
+    path('View-Report/<int:ReportID>',views.View_Report,name='View_Report')
+
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
